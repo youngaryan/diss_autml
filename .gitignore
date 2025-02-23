@@ -432,3 +432,6 @@ $RECYCLE.BIN/
 *.mp3
 
 kaggle.json
+
+# pretrained modek
+*.1
