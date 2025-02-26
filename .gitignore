@@ -435,3 +435,6 @@ kaggle.json
 
 # pretrained modek
 *.1
+
+# plots and images
+*.png
