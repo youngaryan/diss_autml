@@ -23,7 +23,7 @@ model.train()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = model.to(device)
 # print available memory
-print(torch.cuda.get_device_properties(0).total_memory)
+# print(torch.cpu.get_device_properties(0).total_memory)
 print(device)
 
 # Define a custom dataset class
