@@ -30,5 +30,5 @@ def pretrained_model():
     print(f"Predicted Emotion Class: {predicted_class}")
 
 if __name__ == '__main__':
-    # initlaise()
-    pretrained_model()
+    initlaise()
+    # pretrained_model()
