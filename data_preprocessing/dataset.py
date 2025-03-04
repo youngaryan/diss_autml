@@ -57,7 +57,7 @@ df = pd.read_parquet("hf://datasets/renumics/emodb/data/train-00000-of-00001-cf0
 
 # Dataset and DataLoader
 dataset = EmotionDataset(df, feature_extractor, max_length=3 * 16000)
-dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
 
 # Training setup
 criterion = nn.CrossEntropyLoss()
