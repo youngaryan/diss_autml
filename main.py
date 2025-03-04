@@ -7,7 +7,7 @@ def initlaise():
     # s = sum(m.values())
     # print(s)
 
-    # download_data.generate_train_test_sample()
+    download_data.generate_train_test_sample()
 
 def pretrained_model(): 
     from models.pretrained.ExHuBERT import ExHuBERT
