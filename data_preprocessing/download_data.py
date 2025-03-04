@@ -70,9 +70,9 @@ def download_database(kaggle_path: str = "piyushagni5/berlin-database-of-emotion
         return None
     
 
-def generate_train_test_sample(dataset_path: str = "database/1/wav",
-                               test_path: str = "database/1/demo/test",
-                               train_path: str = "database/1/demo/train",
+def generate_train_test_sample(dataset_path: str = "diss_autml/database/1/wav",
+                               test_path: str = "diss_autml/database/1/demo/test",
+                               train_path: str = "diss_autml/database/1/demo/train",
                                train_test_split_ratio: float = 0.8):
     """
     Splits a dataset of audio files into training and testing sets using sklearn.
