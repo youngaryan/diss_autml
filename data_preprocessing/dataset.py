@@ -86,6 +86,7 @@ for epoch in range(num_epochs):
         loss = criterion(outputs, targets)
         loss.backward()
         optim.step()
+        torch.cuda.empty_cache()
 
         total_loss += loss.item()
         total_correct += (outputs.argmax(1) == targets).sum().item()
