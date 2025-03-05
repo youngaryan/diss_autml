@@ -4,3 +4,5 @@ scikit-learn
 librosa
 torch
 transformers
+pyarrow
+fastparquet
