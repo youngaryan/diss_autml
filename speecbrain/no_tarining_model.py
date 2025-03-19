@@ -3,7 +3,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from speechbrain.inference import EncoderClassifier
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from data_preprocessing.dataset_speech_brain import EmotionDataset
+
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
