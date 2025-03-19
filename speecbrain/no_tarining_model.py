@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from speechbrain.inference import EncoderClassifier
-from data_preprocessing.dataset import EmotionDataset
+from data_preprocessing.dataset_speech_brain import EmotionDataset
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 
