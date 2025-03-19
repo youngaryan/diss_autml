@@ -5,7 +5,11 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from speechbrain.inference import EncoderClassifier
-from data_preprocessing.dataset import EmotionDataset
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from data_preprocessing.dataset_speech_brain import EmotionDataset
 
 # Set device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
