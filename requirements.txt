@@ -2,5 +2,17 @@ librosa
 pandas 
 transformers
 torch
+
+# database request libs
 pyarrow
 fastparquet
+
+# hpo libs
+optuna
+ray[tune]
+hyperopt
+ax-platform 
+botorch
+wandb 
+pyarrow
+scikit-learn
