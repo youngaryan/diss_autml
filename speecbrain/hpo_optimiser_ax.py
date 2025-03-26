@@ -125,7 +125,9 @@ for i in range(n_trials):
 # ---------------------
 # Retrieve and Print Best Trial Details
 # ---------------------
-best_parameters, best_trial_index = ax_client.get_best_trial()
+best_parameters, _ = ax_client.get_best_parameters()
+best_trial_index = ax_client.experiment.best_trial.index
+
 print("\nBest trial:")
 print("  Trial Number: ", best_trial_index)
 print("  Best Parameters: ", best_parameters)
