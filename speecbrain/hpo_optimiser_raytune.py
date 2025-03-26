@@ -46,8 +46,11 @@ def train_tune(config):
     results["total_time"] = total_time
 
     # Report metrics to Ray Tune
-    tune.report(validation_accuracy=results.get("validation_accuracy", 0), total_time=total_time)
-
+    # tune.report(validation_accuracy=results.get("validation_accuracy", 0), total_time=total_time)
+    tune.report(**{
+        "validation_accuracy": results.get("validation_accuracy", 0),
+        "total_time": total_time
+    })
     # ---------------------
     # Write trial results immediately to CSV
     # ---------------------
