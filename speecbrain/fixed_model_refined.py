@@ -19,9 +19,9 @@ from sklearn.preprocessing import LabelEncoder
 # ---------------------------
 config = {
     "batch_size": 1,
-    "lr": 1e-5,
-    "num_epochs": 5,
-    "unfreeze_epoch": 2,  # Epoch at which to unfreeze the feature extractor
+    "lr": 2.4036945650359635e-05,
+    "num_epochs": 9,
+    "unfreeze_epoch": 5,  # Epoch at which to unfreeze the feature extractor
     "max_length": 3 * 16000,  # 3 seconds at 16kHz
     "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 }

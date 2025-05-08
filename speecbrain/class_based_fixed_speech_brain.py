@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from speechbrain.inference import EncoderClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import balanced_accuracy_score
 import sys
 import os
 import time
@@ -81,12 +82,39 @@ class EmotionRecognitionTrainer:
             features = features.unsqueeze(0)
         return features
 
+    # def validate(self):
+    #     """Run validation and return average loss and accuracy."""
+    #     self.model.eval()
+    #     total_loss = 0.0
+    #     total_correct = 0
+    #     total_samples = 0
+
+    #     with torch.no_grad():
+    #         for inputs, targets in self.valid_loader:
+    #             inputs, targets = inputs.to(self.device), targets.to(self.device)
+    #             inputs = self.fix_input_shape(inputs)
+    #             features = self.model.mods.wav2vec2.extract_features(inputs)[0]
+    #             features = self.fix_feature_shape(features)
+    #             pooled = self.model.mods.avg_pool(features)
+    #             if pooled.ndim == 1:
+    #                 pooled = pooled.unsqueeze(0)
+    #             elif pooled.ndim == 3:
+    #                 pooled = pooled.squeeze(1)
+    #             predictions = self.model.mods.output_mlp(pooled)
+    #             loss = self.criterion(predictions, targets)
+    #             total_loss += loss.item()
+    #             total_correct += (predictions.argmax(dim=1) == targets).sum().item()
+    #             total_samples += targets.size(0)
+    #     avg_loss = total_loss / len(self.valid_loader)
+    #     accuracy = total_correct / total_samples if total_samples > 0 else 0
+    #     return avg_loss, accuracy
+
     def validate(self):
-        """Run validation and return average loss and accuracy."""
+        """Run validation and return average loss and balanced accuracy."""
         self.model.eval()
         total_loss = 0.0
-        total_correct = 0
-        total_samples = 0
+        all_preds = []
+        all_labels = []
 
         with torch.no_grad():
             for inputs, targets in self.valid_loader:
@@ -102,11 +130,14 @@ class EmotionRecognitionTrainer:
                 predictions = self.model.mods.output_mlp(pooled)
                 loss = self.criterion(predictions, targets)
                 total_loss += loss.item()
-                total_correct += (predictions.argmax(dim=1) == targets).sum().item()
-                total_samples += targets.size(0)
+
+                all_preds.extend(predictions.argmax(dim=1).cpu().numpy())
+                all_labels.extend(targets.cpu().numpy())
+
         avg_loss = total_loss / len(self.valid_loader)
-        accuracy = total_correct / total_samples if total_samples > 0 else 0
-        return avg_loss, accuracy
+        balanced_acc = balanced_accuracy_score(all_labels, all_preds)
+        return avg_loss, balanced_acc
+
 
     def train(self):
         """
