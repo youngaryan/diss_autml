@@ -64,7 +64,7 @@ ax_client.create_experiment(
 n_trials = 50
 
 # Prepare CSV output
-csv_file = os.path.join(os.path.dirname(__file__), "hpo_results_ax.csv")
+csv_file = os.path.join(os.path.dirname(__file__), "hpo_results_ax_bca.csv")
 fieldnames = [
     "trial_number", "lr", "num_epochs", "unfreeze_epoch", "max_length",
     "validation_accuracy", "total_time"

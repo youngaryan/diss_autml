@@ -30,7 +30,7 @@ if __name__ == "__main__":
     train_df, valid_df = train_test_split(df, test_size=0.2, random_state=42)
 
     # Prepare CSV file to record experiment results
-    csv_file = os.path.join(os.path.dirname(__file__), "result_exhaustive.csv")
+    csv_file = os.path.join(os.path.dirname(__file__), "result_exhaustive_bca.csv")
     fieldnames = [
         "batch_size", "lr", "num_epochs", "unfreeze_epoch", "max_length",
         "validation_accuracy", "train_time", "validation_time", "total_time"
