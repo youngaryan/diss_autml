@@ -1,0 +1,2 @@
+trial_number,lr,num_epochs,unfreeze_epoch,max_length,validation_accuracy,total_time
+0,7.604688436376004e-05,9,5,32000,0.14285714285714285,1191.7362279891968

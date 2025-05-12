@@ -1,0 +1,2 @@
+lr,num_epochs,unfreeze_epoch,max_length,validation_accuracy,total_time
+9.252676403870336e-05,7,5,48000,0.14285714285714285,1023.5034883022308
