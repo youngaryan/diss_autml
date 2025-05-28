@@ -17,12 +17,14 @@ from sklearn.preprocessing import LabelEncoder
 # ---------------------------
 # Configuration
 # ---------------------------
+# 0,7.960917579180225e-06,9,5,64000,0.9301587301587302,1621.540283203125
+
 config = {
     "batch_size": 1,
-    "lr": 2.4036945650359635e-05,
+    "lr": 7.960917579180225e-06,
     "num_epochs": 9,
     "unfreeze_epoch": 5,  # Epoch at which to unfreeze the feature extractor
-    "max_length": 3 * 16000,  # 3 seconds at 16kHz
+    "max_length": 64000,  # 3 seconds at 16kHz
     "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 }
 
@@ -92,6 +94,20 @@ for name, param in model.named_parameters():
 # Load and Preprocess Dataset
 # ---------------------------
 df = pd.read_parquet("hf://datasets/renumics/emodb/data/train-00000-of-00001-cf0d4b1ae18136ff.parquet")
+# 
+# REVDESS TEST
+# 
+# from datasets import load_dataset
+
+# df = load_dataset("confit/ravdess-parquet", "fold1")
+# df_t = df["train"].to_pandas()
+# df_tes = df["test"].to_pandas()
+# df = pd.concat([df_t, df_tes], ignore_index=True)
+# df = df[~df["emotion"].isin(["calm", "surprised"])].reset_index(drop=True)
+
+
+#####################################
+
 # Use LabelEncoder for robustness
 label_encoder_obj = LabelEncoder()
 df["emotion"] = label_encoder_obj.fit_transform(df["emotion"])
@@ -187,3 +203,10 @@ for epoch in range(config["num_epochs"]):
     # Run validation at the end of the epoch
     val_loss, val_accuracy = validate(model, valid_loader, criterion, device)
     print(f"Epoch [{epoch+1}/{config['num_epochs']}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}")
+
+
+
+# Saving model after training
+torch.save(model, "fine_tuned_model.pt")
+torch.save(model.state_dict(), "fine_tuned_model_state_dict.pt")
+print("Model saved as 'fine_tuned_model.pt' and 'fine_tuned_model_state_dict.pt'")

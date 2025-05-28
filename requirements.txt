@@ -8,16 +8,18 @@ pyarrow
 fastparquet
 
 # hpo libs
-optuna
-ray[tune]
-hyperopt
-ax-platform 
-botorch
-wandb 
+# optuna
+# ray[tune]
+# hyperopt
+# ax-platform 
+# botorch
+# wandb 
 pyarrow
 scikit-learn
 
 
+speechbrain
 
+datasets
 # to remove
-matplotlib
+# matplotlib
