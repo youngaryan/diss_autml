@@ -207,6 +207,10 @@ for epoch in range(config["num_epochs"]):
 
 
 # Saving model after training
-torch.save(model, "fine_tuned_model.pt")
-torch.save(model.state_dict(), "fine_tuned_model_state_dict.pt")
-print("Model saved as 'fine_tuned_model.pt' and 'fine_tuned_model_state_dict.pt'")
+# torch.save(model, "fine_tuned_model.pt")
+# torch.save(model.state_dict(), "fine_tuned_model_state_dict.pt")
+# print("Model saved as 'fine_tuned_model.pt' and 'fine_tuned_model_state_dict.pt'")
+
+
+torch.save(model.state_dict(), "fine_tuned_model_state_dict.pt") 
+print(" Model state_dict saved as 'fine_tuned_model_state_dict.pt'")
