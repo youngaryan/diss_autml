@@ -5,10 +5,14 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Subset
 from speechbrain.inference import EncoderClassifier
+from sklearn.metrics import balanced_accuracy_score
+
+import matplotlib.pyplot as plt
 
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 from data_preprocessing.dataset_speech_brain import EmotionDataset
 from sklearn.model_selection import train_test_split
@@ -50,6 +54,8 @@ def validate(model, dataloader, criterion, device):
     total_loss = 0.0
     total_correct = 0
     total_samples = 0
+    all_preds=[]
+    all_targets=[]
 
     with torch.no_grad():
         for inputs, targets in dataloader:
@@ -67,9 +73,15 @@ def validate(model, dataloader, criterion, device):
             total_loss += loss.item()
             total_correct += (predictions.argmax(dim=1) == targets).sum().item()
             total_samples += targets.size(0)
+
+            all_preds.extend(predictions.argmax(dim=1) == targets).sum().item()
+            all_targets.extend(targets.cpu().numpy())
+
+
     avg_loss = total_loss / len(dataloader)
+    bca = balanced_accuracy_score(all_targets, all_preds)
     accuracy = total_correct / total_samples if total_samples > 0 else 0
-    return avg_loss, accuracy
+    return avg_loss, accuracy, bca, all_preds,all_targets
 
 # ---------------------------
 # Device Setup
@@ -150,6 +162,8 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["
 # ---------------------------
 best_val_accuracy = 0.0
 best_model_state_dict = None
+all_preds=[]
+all_tragets=[]
 
 for epoch in range(config["num_epochs"]):
     model.train()
@@ -204,20 +218,32 @@ for epoch in range(config["num_epochs"]):
     print(f"Epoch [{epoch+1}/{config['num_epochs']}], Average Loss: {epoch_loss:.4f}, Training Accuracy: {epoch_accuracy:.4f}")
 
     # Run validation at the end of the epoch
-    val_loss, val_accuracy = validate(model, valid_loader, criterion, device)
+    val_loss, val_accuracy,bca,all_preds1, all_tragets1 = validate(model, valid_loader, criterion, device)
     print(f"Epoch [{epoch+1}/{config['num_epochs']}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}")
     
-    if val_accuracy > best_val_accuracy:
-        best_val_accuracy = val_accuracy
+    if bca > best_val_accuracy:
+        best_val_accuracy = bca
         best_model_state_dict = model.state_dict()
+        all_preds=all_preds1
+        all_tragets=all_tragets1
         print(f"New best model found at epoch {epoch+1} with val accuracy {val_accuracy:.4f}")
 
 
-# Saving model after training
-# torch.save(model, "fine_tuned_model.pt")
-# torch.save(model.state_dict(), "fine_tuned_model_state_dict.pt")
-# print("Model saved as 'fine_tuned_model.pt' and 'fine_tuned_model_state_dict.pt'")
+EMODB_LABELS = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
 
+# ---------------------------
+# Confusion Matrix
+# ---------------------------
+cm = confusion_matrix(all_tragets, all_preds, normalize='true')
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
+
+fig, ax = plt.subplots(figsize=(8, 6))
+disp.plot(ax=ax, cmap="Blues", colorbar=False)
+plt.title("Confusion Matrix on RAVDESS (Predicted vs True)")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig("confusion_matrix_ravdess.png")
+print("📊 Saved confusion matrix as confusion_matrix_ravdess.png")
 
 if best_model_state_dict is not None:
     torch.save(best_model_state_dict, "best_fine_tuned_model_state_dict.pt")
