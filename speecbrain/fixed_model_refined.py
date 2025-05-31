@@ -198,11 +198,6 @@ for epoch in range(config["num_epochs"]):
         total_samples += targets.size(0)
         print(f"Epoch [{epoch+1}/{config['num_epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}")
 
-        if val_accuracy > best_val_accuracy:
-            best_val_accuracy = val_accuracy
-            best_model_state_dict = model.state_dict()
-            print(f"New best model found at epoch {epoch+1} with val accuracy {val_accuracy:.4f}")
-
     scheduler.step()
     epoch_loss = total_loss / len(train_loader)
     epoch_accuracy = total_correct / total_samples
@@ -211,7 +206,11 @@ for epoch in range(config["num_epochs"]):
     # Run validation at the end of the epoch
     val_loss, val_accuracy = validate(model, valid_loader, criterion, device)
     print(f"Epoch [{epoch+1}/{config['num_epochs']}], Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.4f}")
-
+    
+    if val_accuracy > best_val_accuracy:
+        best_val_accuracy = val_accuracy
+        best_model_state_dict = model.state_dict()
+        print(f"New best model found at epoch {epoch+1} with val accuracy {val_accuracy:.4f}")
 
 
 # Saving model after training
