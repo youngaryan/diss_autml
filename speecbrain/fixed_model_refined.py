@@ -148,6 +148,9 @@ scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["
 # ---------------------------
 # Training Loop
 # ---------------------------
+best_val_accuracy = 0.0
+best_model_state_dict = None
+
 for epoch in range(config["num_epochs"]):
     model.train()
     total_loss = 0.0
@@ -195,6 +198,11 @@ for epoch in range(config["num_epochs"]):
         total_samples += targets.size(0)
         print(f"Epoch [{epoch+1}/{config['num_epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}")
 
+        if val_accuracy > best_val_accuracy:
+            best_val_accuracy = val_accuracy
+            best_model_state_dict = model.state_dict()
+            print(f"New best model found at epoch {epoch+1} with val accuracy {val_accuracy:.4f}")
+
     scheduler.step()
     epoch_loss = total_loss / len(train_loader)
     epoch_accuracy = total_correct / total_samples
@@ -212,5 +220,10 @@ for epoch in range(config["num_epochs"]):
 # print("Model saved as 'fine_tuned_model.pt' and 'fine_tuned_model_state_dict.pt'")
 
 
-torch.save(model.state_dict(), "fine_tuned_model_state_dict.pt") 
-print(" Model state_dict saved as 'fine_tuned_model_state_dict.pt'")
+if best_model_state_dict is not None:
+    torch.save(best_model_state_dict, "best_fine_tuned_model_state_dict.pt")
+    print("Best model state_dict saved as 'best_fine_tuned_model_state_dict.pt'")
+else:
+    print("Warning: No best model was found; saving final model instead.")
+    torch.save(model.state_dict(), "final_fine_tuned_model_state_dict.pt")
+
