@@ -74,7 +74,7 @@ def validate(model, dataloader, criterion, device):
             total_correct += (predictions.argmax(dim=1) == targets).sum().item()
             total_samples += targets.size(0)
 
-            all_preds.extend(predictions.argmax(dim=1) == targets).sum().item()
+            all_preds.extend(predictions.argmax(dim=1).cpu().numpy())
             all_targets.extend(targets.cpu().numpy())
 
 
