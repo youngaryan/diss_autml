@@ -100,6 +100,6 @@ INFO:speechbrain.utils.fetching:Fetch label_encoder.txt: Fetching from HuggingFa
 INFO:speechbrain.utils.parameter_transfer:Loading pretrained files for: wav2vec2, model, label_encoder
 [3 5 4 1 0 2]
 7442
-✅ TESS Generalization Test — Loss: 1.8680, Balanced Accuracy: 0.1404, raw Acc 0.1439
+✅ TESS Generalization Test — Loss: 1.8029, Balanced Accuracy: 0.2495, raw Acc 0.2466
 📊 Saved confusion matrix as confusion_matrix_tess.png
 📊 Saved bar chart as emotion_true_positive_comparison_tess.png
