@@ -8,8 +8,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import torchaudio
 import torchaudio.transforms as T
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
+import io
 from datasets import load_dataset
 
 # ---------------------------
@@ -32,13 +33,14 @@ label_encoder.fit(EMODB_LABELS)
 # TESS to EMO-DB Mapping
 # ---------------------------
 crema_to_emodb = {
-    "Anger": "anger",
-    "Disgust": "disgust",
-    "Fear": "fear",
-    "Happy": "happiness",
-    "Neutral": "neutral",
-    "Sad": "sadness"
+    0: "anger",
+    1: "disgust",
+    2: "fear",
+    3: "happiness",
+    4: "neutral",
+    5: "sadness",
 }
+
 
 # ---------------------------
 # Load TESS from Hugging Face
@@ -47,18 +49,32 @@ crema_to_emodb = {
 
 df =load_dataset("myleslinder/crema-d",trust_remote_code=True)
 
-if df.empty:
-    raise ValueError("❌ Dataset is empty. Check Hugging Face download or internet connection.")
 
-df["emotion"] = df["emotion"].map(crema_to_emodb)
-df = df[df["emotion"].notnull()].reset_index(drop=True)
+if "train" not in df or len(df["train"]) == 0:
+    raise ValueError("❌ Dataset is empty or missing 'train' split. Check Hugging Face download or internet connection.")
+
+train_dataset = df["train"]
+
+# Convert to pandas DataFrame for processing
+df_pd = train_dataset.to_pandas()
+
+# Map labels
+df_pd["emotion"] = df_pd["label"].map(crema_to_emodb)
+
+print(df_pd["label"].unique())  # See what labels you actually have
+print(len(df_pd)) 
+# Drop any unmapped emotions
+df_pd = df_pd[df_pd["emotion"].notnull()].reset_index(drop=True)
 
 # ---------------------------
 # Define TESSDataset
 # ---------------------------
-class TESSDataset(Dataset):
-    def __init__(self, dataframe, max_length=64000, label_encoder=None):
+import tempfile
+
+class EmotionDataset(Dataset):
+    def __init__(self, dataframe, feature_extractor=None, max_length=64000, label_encoder=None):
         self.dataframe = dataframe
+        self.feature_extractor = feature_extractor
         self.max_length = max_length
         self.label_encoder = label_encoder
 
@@ -67,24 +83,32 @@ class TESSDataset(Dataset):
 
     def __getitem__(self, idx):
         sample = self.dataframe.iloc[idx]
-        waveform, sample_rate = torchaudio.load(sample["filepath"])
 
+        # ✅ Use the file path provided by the Hugging Face dataset
+        audio_path = sample["audio"]["path"]
+        waveform, sample_rate = torchaudio.load(audio_path)
+
+        # Resample to 16kHz if needed
         if sample_rate != 16000:
-            resampler = T.Resample(sample_rate, 16000)
+            resampler = T.Resample(orig_freq=sample_rate, new_freq=16000)
             waveform = resampler(waveform)
 
-        waveform = waveform.mean(dim=0)
+        waveform = waveform.mean(dim=0)  # Convert stereo → mono
 
+        # Pad or truncate to fixed length
         if waveform.size(0) > self.max_length:
             waveform = waveform[:self.max_length]
         else:
-            pad_len = self.max_length - waveform.size(0)
-            waveform = torch.nn.functional.pad(waveform, (0, pad_len))
+            pad_length = self.max_length - waveform.size(0)
+            waveform = torch.nn.functional.pad(waveform, (0, pad_length))
 
+        # Encode the label
         label_str = sample["emotion"]
         label = self.label_encoder.transform([label_str])[0]
 
         return waveform, torch.tensor(label, dtype=torch.long)
+
+
 
 # ---------------------------
 # Helper Functions
@@ -153,7 +177,7 @@ model.eval()
 # ---------------------------
 # Run Evaluation
 # ---------------------------
-dataset = TESSDataset(df, label_encoder=label_encoder, max_length=config["max_length"])
+dataset = EmotionDataset(df_pd, label_encoder=label_encoder, max_length=config["max_length"])
 dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
@@ -166,13 +190,13 @@ print(f"✅ TESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accurac
 cm = confusion_matrix(all_targets, all_preds, normalize='true')
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
 
-fig, ax = plt.subplots(figsize=(8, 6))
-disp.plot(ax=ax, cmap="Blues", colorbar=False)
-plt.title("Confusion Matrix on TESS (Predicted vs True)")
-plt.xticks(rotation=45)
-plt.tight_layout()
-plt.savefig("confusion_matrix_tess.png")
-print("📊 Saved confusion matrix as confusion_matrix_tess.png")
+# fig, ax = plt.subplots(figsize=(8, 6))
+# disp.plot(ax=ax, cmap="Blues", colorbar=False)
+# plt.title("Confusion Matrix on TESS (Predicted vs True)")
+# plt.xticks(rotation=45)
+# plt.tight_layout()
+# plt.savefig("confusion_matrix_tess.png")
+# print("📊 Saved confusion matrix as confusion_matrix_tess.png")
 
 # ---------------------------
 # Plot True Positives per Emotion
@@ -190,24 +214,24 @@ labels = EMODB_LABELS
 x = np.arange(len(labels))
 width = 0.35
 
-fig, ax = plt.subplots(figsize=(10, 6))
-bar1 = ax.bar(x - width/2, [emotion_counts[l] for l in labels], width, label='Total Instances')
-bar2 = ax.bar(x + width/2, [true_positives[l] for l in labels], width, label='True Positives')
+# fig, ax = plt.subplots(figsize=(10, 6))
+# bar1 = ax.bar(x - width/2, [emotion_counts[l] for l in labels], width, label='Total Instances')
+# bar2 = ax.bar(x + width/2, [true_positives[l] for l in labels], width, label='True Positives')
 
-ax.set_ylabel('Count')
-ax.set_title('Emotion-wise Total vs True Positives on TESS')
-ax.set_xticks(x)
-ax.set_xticklabels(labels)
-ax.legend()
+# ax.set_ylabel('Count')
+# ax.set_title('Emotion-wise Total vs True Positives on TESS')
+# ax.set_xticks(x)
+# ax.set_xticklabels(labels)
+# ax.legend()
 
-for rect in bar1 + bar2:
-    height = rect.get_height()
-    ax.annotate(f'{height}',
-                xy=(rect.get_x() + rect.get_width() / 2, height),
-                xytext=(0, 3),
-                textcoords="offset points",
-                ha='center', va='bottom', fontsize=8)
+# for rect in bar1 + bar2:
+#     height = rect.get_height()
+#     ax.annotate(f'{height}',
+#                 xy=(rect.get_x() + rect.get_width() / 2, height),
+#                 xytext=(0, 3),
+#                 textcoords="offset points",
+#                 ha='center', va='bottom', fontsize=8)
 
-plt.tight_layout()
-plt.savefig("emotion_true_positive_comparison_tess.png")
+# plt.tight_layout()
+# plt.savefig("emotion_true_positive_comparison_tess.png")
 print("📊 Saved bar chart as emotion_true_positive_comparison_tess.png")
