@@ -32,15 +32,22 @@ label_encoder.fit(EMODB_LABELS)
 # ---------------------------
 # TESS to EMO-DB Mapping
 # ---------------------------
+# crema_to_emodb = {
+#     0: "anger",
+#     1: "disgust",
+#     2: "fear",
+#     3: "happiness",
+#     4: "neutral",
+#     5: "sadness",
+# }
 crema_to_emodb = {
-    0: "anger",
-    1: "disgust",
-    2: "fear",
-    3: "happiness",
-    4: "neutral",
-    5: "sadness",
+    'neutral': 'neutral',
+    'happy': 'happiness',
+    'sad': 'sadness',
+    'anger': 'anger',
+    'fear': 'fear',
+    'disgust': 'disgust'
 }
-
 
 # ---------------------------
 # Load TESS from Hugging Face
@@ -54,18 +61,27 @@ if "train" not in df or len(df["train"]) == 0:
     raise ValueError("❌ Dataset is empty or missing 'train' split. Check Hugging Face download or internet connection.")
 
 train_dataset = df["train"]
-
+print(df["train"].features["label"])
 # Convert to pandas DataFrame for processing
 df_pd = train_dataset.to_pandas()
 
 # Map labels
-df_pd["emotion"] = df_pd["label"].map(crema_to_emodb)
+# df_pd["emotion"] = df_pd["label"].map(crema_to_emodb)
 
-print(df_pd["label"].unique())  # See what labels you actually have
-print(len(df_pd)) 
-# Drop any unmapped emotions
+# print(df_pd["label"].unique())  # See what labels you actually have
+# print(len(df_pd)) 
+# # Drop any unmapped emotions
+# df_pd = df_pd[df_pd["emotion"].notnull()].reset_index(drop=True)
+
+
+label_names = df["train"].features["label"].names
+df_pd["emotion_raw"] = df_pd["label"].map(lambda x: label_names[x])
+
+# Now map to EMO-DB-compatible labels
+df_pd["emotion"] = df_pd["emotion_raw"].map(crema_to_emodb)
+
+# Drop unmapped
 df_pd = df_pd[df_pd["emotion"].notnull()].reset_index(drop=True)
-
 # ---------------------------
 # Define TESSDataset
 # ---------------------------
