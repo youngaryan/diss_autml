@@ -45,7 +45,7 @@ crema_to_emodb = {
 # ---------------------------
 
 
-df =load_dataset("myleslinder/crema-d")
+df =load_dataset("myleslinder/crema-d",trust_remote_code=True)
 
 if df.empty:
     raise ValueError("❌ Dataset is empty. Check Hugging Face download or internet connection.")
