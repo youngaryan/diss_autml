@@ -22,4 +22,5 @@ speechbrain
 
 datasets
 # to remove
-# matplotlib
+matplotlib
+numpy
