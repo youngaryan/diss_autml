@@ -44,19 +44,9 @@ tess_to_emodb = {
 # ---------------------------
 # Load TESS from Hugging Face
 # ---------------------------
-def load_tess_dataset_from_hf():
-    print("📥 Downloading TESS from Hugging Face...")
-    dataset = load_dataset("openspeech/tess")
-    data = []
-    for item in dataset["train"]:
-        filepath = item["file"]
-        emotion = item["label"].lower()
-        data.append({"filepath": filepath, "emotion": emotion})
-    df = pd.DataFrame(data)
-    print(f"✅ Loaded {len(df)} audio samples from Hugging Face.")
-    return df
 
-df = load_tess_dataset_from_hf()
+
+df =load_dataset("tess")
 
 if df.empty:
     raise ValueError("❌ Dataset is empty. Check Hugging Face download or internet connection.")
