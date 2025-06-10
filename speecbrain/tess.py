@@ -54,6 +54,8 @@ def load_tess_dataset(base_path="TESS"):
     return pd.DataFrame(data)
 
 df = load_tess_dataset("TESS")
+print(df.head())  # or print(df.columns)
+
 df["emotion"] = df["emotion"].map(tess_to_emodb)
 df = df[df["emotion"].notnull()].reset_index(drop=True)
 
