@@ -46,7 +46,7 @@ tess_to_emodb = {
 # ---------------------------
 def load_tess_dataset_from_hf():
     print("📥 Downloading TESS from Hugging Face...")
-    dataset = load_dataset("PolyAI/TESS")
+    dataset = load_dataset("openspeech/tess")
     data = []
     for item in dataset["train"]:
         filepath = item["file"]
