@@ -31,14 +31,13 @@ label_encoder.fit(EMODB_LABELS)
 # ---------------------------
 # TESS to EMO-DB Mapping
 # ---------------------------
-tess_to_emodb = {
-    "angry": "anger",
-    "disgust": "disgust",
-    "fear": "fear",
-    "happy": "happiness",
-    "neutral": "neutral",
-    "sad": "sadness",
-    "surprise": "boredom"  # optional mapping
+crema_to_emodb = {
+    "Anger": "anger",
+    "Disgust": "disgust",
+    "Fear": "fear",
+    "Happy": "happiness",
+    "Neutral": "neutral",
+    "Sad": "sadness"
 }
 
 # ---------------------------
@@ -46,12 +45,12 @@ tess_to_emodb = {
 # ---------------------------
 
 
-df =load_dataset("tess")
+df =load_dataset("myleslinder/crema-d")
 
 if df.empty:
     raise ValueError("❌ Dataset is empty. Check Hugging Face download or internet connection.")
 
-df["emotion"] = df["emotion"].map(tess_to_emodb)
+df["emotion"] = df["emotion"].map(crema_to_emodb)
 df = df[df["emotion"].notnull()].reset_index(drop=True)
 
 # ---------------------------
