@@ -25,7 +25,7 @@ config = {
 # ---------------------------
 # EMO-DB Emotion Labels
 # ---------------------------
-EMODB_LABELS = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
+EMODB_LABELS = ['anger', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
 label_encoder = LabelEncoder()
 label_encoder.fit(EMODB_LABELS)
 
@@ -190,13 +190,13 @@ print(f"✅ TESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accurac
 cm = confusion_matrix(all_targets, all_preds, normalize='true')
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
 
-# fig, ax = plt.subplots(figsize=(8, 6))
-# disp.plot(ax=ax, cmap="Blues", colorbar=False)
-# plt.title("Confusion Matrix on TESS (Predicted vs True)")
-# plt.xticks(rotation=45)
-# plt.tight_layout()
-# plt.savefig("confusion_matrix_tess.png")
-# print("📊 Saved confusion matrix as confusion_matrix_tess.png")
+fig, ax = plt.subplots(figsize=(8, 6))
+disp.plot(ax=ax, cmap="Blues", colorbar=False)
+plt.title("Confusion Matrix on TESS (Predicted vs True)")
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig("confusion_matrix_tess.png")
+print("📊 Saved confusion matrix as confusion_matrix_tess.png")
 
 # ---------------------------
 # Plot True Positives per Emotion
@@ -214,24 +214,24 @@ labels = EMODB_LABELS
 x = np.arange(len(labels))
 width = 0.35
 
-# fig, ax = plt.subplots(figsize=(10, 6))
-# bar1 = ax.bar(x - width/2, [emotion_counts[l] for l in labels], width, label='Total Instances')
-# bar2 = ax.bar(x + width/2, [true_positives[l] for l in labels], width, label='True Positives')
+fig, ax = plt.subplots(figsize=(10, 6))
+bar1 = ax.bar(x - width/2, [emotion_counts[l] for l in labels], width, label='Total Instances')
+bar2 = ax.bar(x + width/2, [true_positives[l] for l in labels], width, label='True Positives')
 
-# ax.set_ylabel('Count')
-# ax.set_title('Emotion-wise Total vs True Positives on TESS')
-# ax.set_xticks(x)
-# ax.set_xticklabels(labels)
-# ax.legend()
+ax.set_ylabel('Count')
+ax.set_title('Emotion-wise Total vs True Positives on TESS')
+ax.set_xticks(x)
+ax.set_xticklabels(labels)
+ax.legend()
 
-# for rect in bar1 + bar2:
-#     height = rect.get_height()
-#     ax.annotate(f'{height}',
-#                 xy=(rect.get_x() + rect.get_width() / 2, height),
-#                 xytext=(0, 3),
-#                 textcoords="offset points",
-#                 ha='center', va='bottom', fontsize=8)
+for rect in bar1 + bar2:
+    height = rect.get_height()
+    ax.annotate(f'{height}',
+                xy=(rect.get_x() + rect.get_width() / 2, height),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha='center', va='bottom', fontsize=8)
 
-# plt.tight_layout()
-# plt.savefig("emotion_true_positive_comparison_tess.png")
+plt.tight_layout()
+plt.savefig("emotion_true_positive_comparison_tess.png")
 print("📊 Saved bar chart as emotion_true_positive_comparison_tess.png")
