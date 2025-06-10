@@ -2,7 +2,7 @@ librosa
 pandas 
 transformers
 torch
-
+#libsndfile
 # database request libs
 pyarrow
 fastparquet
@@ -22,4 +22,5 @@ speechbrain
 
 datasets
 # to remove
-# matplotlib
+matplotlib
+numpy
