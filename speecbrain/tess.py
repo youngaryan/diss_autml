@@ -10,6 +10,7 @@ import torchaudio
 import torchaudio.transforms as T
 import matplotlib.pyplot as plt
 import numpy as np
+from datasets import load_dataset
 
 # ---------------------------
 # Configuration
@@ -32,29 +33,33 @@ label_encoder.fit(EMODB_LABELS)
 # ---------------------------
 tess_to_emodb = {
     "angry": "anger",
-    "disgust": "disgust",      # if not in TESS, this will be filtered out
+    "disgust": "disgust",
     "fear": "fear",
     "happy": "happiness",
     "neutral": "neutral",
     "sad": "sadness",
-    "surprise": "boredom"      # optional mapping
+    "surprise": "boredom"  # optional mapping
 }
 
 # ---------------------------
-# Load TESS into DataFrame
+# Load TESS from Hugging Face
 # ---------------------------
-def load_tess_dataset(base_path="TESS"):
+def load_tess_dataset_from_hf():
+    print("📥 Downloading TESS from Hugging Face...")
+    dataset = load_dataset("PolyAI/TESS")
     data = []
-    for root, _, files in os.walk(base_path):
-        for file in files:
-            if file.endswith(".wav"):
-                emotion = os.path.basename(root).split("_")[-1].lower()  # e.g., "happy"
-                filepath = os.path.join(root, file)
-                data.append({"filepath": filepath, "emotion": emotion})
-    return pd.DataFrame(data)
+    for item in dataset["train"]:
+        filepath = item["file"]
+        emotion = item["label"].lower()
+        data.append({"filepath": filepath, "emotion": emotion})
+    df = pd.DataFrame(data)
+    print(f"✅ Loaded {len(df)} audio samples from Hugging Face.")
+    return df
 
-df = load_tess_dataset("TESS")
-print(df.head())  # or print(df.columns)
+df = load_tess_dataset_from_hf()
+
+if df.empty:
+    raise ValueError("❌ Dataset is empty. Check Hugging Face download or internet connection.")
 
 df["emotion"] = df["emotion"].map(tess_to_emodb)
 df = df[df["emotion"].notnull()].reset_index(drop=True)
@@ -152,9 +157,6 @@ model = EncoderClassifier.from_hparams(
 # Replace classification head
 in_features = model.mods.output_mlp.w.weight.shape[1]
 model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS))
-
-# Load fine-tuned model weights if available
-# model.load_state_dict(torch.load("fine_tuned_model_state_dict.pt"))
 
 model.to(config["device"])
 model.eval()
