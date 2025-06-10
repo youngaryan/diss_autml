@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import torchaudio
 import torchaudio.transforms as T
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import io
 from datasets import load_dataset
@@ -156,7 +156,8 @@ def validate(model, dataloader, criterion, device):
 
     avg_loss = total_loss / len(dataloader)
     bca = balanced_accuracy_score(all_targets, all_preds)
-    return avg_loss, bca, all_preds, all_targets
+    raw_acc = total_correct / total_samples
+    return avg_loss, bca, all_preds, all_targets, raw_acc
 
 # ---------------------------
 # Load Pretrained Model
@@ -181,8 +182,8 @@ dataset = EmotionDataset(df_pd, label_encoder=label_encoder, max_length=config["
 dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
-test_loss, test_bacc, all_preds, all_targets = validate(model, dataloader, criterion, config["device"])
-print(f"✅ TESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accuracy: {test_bacc:.4f}")
+test_loss, test_bacc, all_preds, all_targets, raw_acc = validate(model, dataloader, criterion, config["device"])
+print(f"✅ TESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accuracy: {test_bacc:.4f}, raw Acc {raw_acc:.4f}")
 
 # ---------------------------
 # Plot Confusion Matrix
