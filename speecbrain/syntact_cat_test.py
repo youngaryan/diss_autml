@@ -143,7 +143,7 @@ label_encoder_obj = joblib.load("label_encoder.joblib")  # or pickle
 # Load fitted LabelEncoder
 
 # Now transform test dataset using same encoder
-df_pd["emotion"] = label_encoder_obj.transform(df_pd["emotion"])
+# df_pd["emotion"] = label_encoder_obj.transform(df_pd["emotion"])
 
 mapping = dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_)))
 print("Label mapping:", mapping)
