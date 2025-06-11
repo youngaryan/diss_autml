@@ -428,7 +428,7 @@ $RECYCLE.BIN/
 
 
 # wave files
-# *.wav
+*.wav
 *.mp3
 
 kaggle.json
