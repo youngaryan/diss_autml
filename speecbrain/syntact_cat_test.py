@@ -162,7 +162,7 @@ model = EncoderClassifier.from_hparams(
     savedir="pretrained_models/emotion_recognition",
     run_opts={"device": config["device"]},
 )
-model.load_state_dict(torch.load("fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.eval().to(config["device"])
 
 # ---------------------------

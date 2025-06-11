@@ -23,4 +23,5 @@ speechbrain
 datasets
 # to remove
 matplotlib
+libsndfile
 numpy
