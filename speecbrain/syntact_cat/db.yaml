@@ -1,0 +1,42 @@
+name: syntact_cat
+description: Synthesized audio files with emofilt in various emotions.
+source: intern
+usage: unrestricted
+languages: [deu]
+media:
+  tts: {type: other, format: wav, channels: 1, sampling_rate: 16000}
+raters:
+  desired: {type: other}
+schemes:
+  emotion:
+    description: Five basic emotions and neutral.
+    dtype: str
+    labels: [anger, happiness, neutral, sadness, boredom, fear]
+  speaker:
+    description: Six mbrola voices for German
+    dtype: str
+    labels:
+      de1: {gender: male, language: deu}
+      de2: {gender: female, language: deu}
+      de3: {gender: male, language: deu}
+      de4: {gender: female, language: deu}
+      de6: {gender: male, language: deu}
+      de7: {gender: female, language: deu}
+splits:
+  test: {type: test}
+  train: {type: train}
+tables:
+  emotion.categories.test.desired:
+    type: filewise
+    split_id: test
+    columns:
+      emotion: {scheme_id: emotion, rater_id: desired}
+  emotion.categories.train.desired:
+    type: filewise
+    split_id: train
+    columns:
+      emotion: {scheme_id: emotion, rater_id: desired}
+  files:
+    type: filewise
+    columns:
+      speaker: {scheme_id: speaker}
