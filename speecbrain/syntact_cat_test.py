@@ -155,15 +155,20 @@ num_classes = len(mapping)  # E
 
 
 
-
-
+# Load model
 model = EncoderClassifier.from_hparams(
     source="speechbrain/emotion-recognition-wav2vec2-IEMOCAP",
     savedir="pretrained_models/emotion_recognition",
-    run_opts={"device": config["device"]},
+    run_opts={"device": config["device"]}
 )
+
+# Patch the output layer to match training-time structure (you used nn.Linear)
+in_features = model.mods.output_mlp.w.in_features  # access .w to get input dim
+model.mods.output_mlp = nn.Linear(in_features, 7)  # or whatever your num_classes is
+
+# Now it will accept standard Linear weights
 model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
-model.eval().to(config["device"])
+model.to(config["device"]).eval()
 
 # ---------------------------
 # Validate on Entire RAVDESS
