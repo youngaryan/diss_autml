@@ -151,19 +151,19 @@ class EmotionDataset(Dataset):
         return waveform, torch.tensor(label, dtype=torch.long)
 
 
-import joblib
+# import joblib
 
-label_encoder_obj = joblib.load("label_encoder.joblib")  # or pickle
+# label_encoder_obj = joblib.load("label_encoder.joblib")  # or pickle
 # Load fitted LabelEncoder
-print(label_encoder_obj.classes_)   # → array([0, 1, 2, 3, 4, 5, 6])
-print(label_encoder_obj.dtype)      # int64 (or similar)
+# print(label_encoder_obj.classes_)   # → array([0, 1, 2, 3, 4, 5, 6])
+# print(label_encoder_obj.dtype)      # int64 (or similar)
 
 # Now transform test dataset using same encoder
 # df_pd["emotion"] = label_encoder_obj.transform(df_pd["emotion"])
 
-mapping = dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_)))
-print("Label mapping:", mapping)
-num_classes = len(mapping)  # E
+# mapping = dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_)))
+# print("Label mapping:", mapping)
+# num_classes = len(mapping)  # E
 
 
 
@@ -194,7 +194,7 @@ dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
 print(model.hparams.label_encoder)  # stores class names used during fine-tuning
-print(label_encoder_obj.classes_)
+# print(label_encoder_obj.classes_)
 
 
 test_loss, test_accuracy, raw_acc = validate(model, dataloader, criterion, config["device"])
