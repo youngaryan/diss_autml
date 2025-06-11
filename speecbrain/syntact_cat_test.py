@@ -93,7 +93,7 @@ def validate(model, dataloader, criterion, device):
             inputs, targets = inputs.to(device), targets.to(device)
 
             # ↓↓↓ single call does feature extraction, pooling, and MLP ↓↓↓
-            logits, _ = model(inputs)          # logits = (batch, num_classes)
+            logits, _ = model.classify_batch(inputs)          # logits = (batch, num_classes)
 
             loss = criterion(logits, targets)
             total_loss     += loss.item()
