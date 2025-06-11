@@ -38,7 +38,8 @@ class EmotionDataset(Dataset):
         # Encode string label to integer
         label_str = sample["emotion"]
         if self.label_encoder and isinstance(label_str, str):
-            label = self.label_encoder[label_str]
+            # label = self.label_encoder[label_str]
+            label = self.label_encoder.transform([label_str])[0]
         else:
             label = int(label_str)
         # label = self.label_encoder[label_str] if self.label_encoder else label_str

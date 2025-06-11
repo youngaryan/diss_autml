@@ -6,7 +6,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Subset
 from speechbrain.inference import EncoderClassifier
 from sklearn.metrics import balanced_accuracy_score
-
+import joblib
 import matplotlib.pyplot as plt
 
 import sys
@@ -106,23 +106,17 @@ for name, param in model.named_parameters():
 # Load and Preprocess Dataset
 # ---------------------------
 df = pd.read_parquet("hf://datasets/renumics/emodb/data/train-00000-of-00001-cf0d4b1ae18136ff.parquet")
-# 
-# REVDESS TEST
-# 
-# from datasets import load_dataset
-
-# df = load_dataset("confit/ravdess-parquet", "fold1")
-# df_t = df["train"].to_pandas()
-# df_tes = df["test"].to_pandas()
-# df = pd.concat([df_t, df_tes], ignore_index=True)
-# df = df[~df["emotion"].isin(["calm", "surprised"])].reset_index(drop=True)
-
 
 #####################################
-
-# Use LabelEncoder for robustness
 label_encoder_obj = LabelEncoder()
-df["emotion"] = label_encoder_obj.fit_transform(df["emotion"])
+label_encoder_obj.fit(df["emotion"])  # <- Fit only
+
+# Save the encoder for downstream use
+joblib.dump(label_encoder_obj, "label_encoder.joblib")
+
+# Optional: view mapping
+print(dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_))))
+# Use LabelEncoder for robustness
 # Print mapping: original label -> encoded label
 mapping = dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_)))
 print("Label mapping:", mapping)
@@ -144,8 +138,8 @@ model.to(device)
 # ---------------------------
 # Create Datasets and DataLoaders
 # ---------------------------
-train_dataset = EmotionDataset(train_df, feature_extractor=None, max_length=config["max_length"], label_encoder=mapping)
-valid_dataset = EmotionDataset(valid_df, feature_extractor=None, max_length=config["max_length"], label_encoder=mapping)
+train_dataset = EmotionDataset(train_df, feature_extractor=None, max_length=config["max_length"], label_encoder=label_encoder_obj)
+valid_dataset = EmotionDataset(valid_df, feature_extractor=None, max_length=config["max_length"], label_encoder=label_encoder_obj)
 train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True)
 valid_loader = DataLoader(valid_dataset, batch_size=config["batch_size"], shuffle=False)
 
