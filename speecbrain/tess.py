@@ -18,7 +18,10 @@ from datasets import load_dataset
 # ---------------------------
 config = {
     "batch_size": 1,
-    "max_length": 64000,
+    "lr": 7.960917579180225e-06,
+    "num_epochs": 9,
+    "unfreeze_epoch": 5,  # Epoch at which to unfreeze the feature extractor
+    "max_length": 64000,  # 3 seconds at 16kHz
     "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 }
 
