@@ -34,6 +34,7 @@ print((len(df_pd_test)))
 
 
 df_pd = pd.concat([df_pd_test,df_pd_train], ignore_index=True)
+df_pd = df_pd_test
 
 label_emo = df_pd['emotion'].unique()
 print(label_emo)
