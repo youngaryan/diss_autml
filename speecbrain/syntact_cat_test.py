@@ -1,211 +1,183 @@
+#!/usr/bin/env python
+# evaluate_syntact_cat.py
+"""
+Evaluate a fine-tuned SpeechBrain emotion-recognition model on the
+syntact_cat corpus (train/test CSVs) without data leakage.
+"""
+
+# ──────────────────────────────
+# Imports
+# ──────────────────────────────
 import os
-import pandas as pd
-import os
+import sys
+from pathlib import Path
+from typing import Tuple, List
+
 import pandas as pd
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
-from speechbrain.inference import EncoderClassifier
-from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
+
 import torchaudio
 import torchaudio.transforms as T
-import matplotlib.pyplot as plt
-import numpy as np
-import io, sys
-from datasets import load_dataset
-import torch.nn.functional as F
+from speechbrain.inference import EncoderClassifier
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# from data_preprocessing.dataset_speech_brain import EmotionDataset
 from sklearn.preprocessing import LabelEncoder
-from datasets import load_dataset
+from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
-csv_path_train = os.path.join(base_dir, "syntact_cat", "db.emotion.categories.train.desired.csv")
-csv_path_test = os.path.join(base_dir, "syntact_cat", "db.emotion.categories.test.desired.csv")
+# ──────────────────────────────
+# Paths
+# ──────────────────────────────
+if "__file__" in globals():
+    BASE_DIR = Path(__file__).resolve().parent
+else:  # notebook / REPL
+    BASE_DIR = Path.cwd()
 
-df_pd_train = pd.read_csv(csv_path_train)
-df_pd_test= pd.read_csv(csv_path_test)
+CSV_DIR      = BASE_DIR / "syntact_cat"
+CSV_TRAIN    = CSV_DIR / "db.emotion.categories.train.desired.csv"
+CSV_TEST     = CSV_DIR / "db.emotion.categories.test.desired.csv"
+CHECKPOINT   = BASE_DIR / "best_fine_tuned_model_state_dict.pt"
+PRETRAIN_DIR = BASE_DIR / "pretrained_models" / "emotion_recognition"
 
-print((len(df_pd_train)))
-print((len(df_pd_test)))
+# ──────────────────────────────
+# Config
+# ──────────────────────────────
+CFG = dict(
+    batch_size =  8,      # bigger is fine for inference
+    max_length = 64000,   # 4.0 s at 16 kHz
+    device     = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+)
 
-
-df_pd = pd.concat([df_pd_test,df_pd_train], ignore_index=True)
-df_pd = df_pd_test
-
-label_emo = df_pd['emotion'].unique()
-print(label_emo)
-
-count_emo = df_pd["emotion"].value_counts()
-
-print(count_emo)
-print((len(df_pd)))
-
-
-
-id2label = {
-    0: "fear",
-    1: "disgust",
-    2: "happiness",
-    3: "boredom",
-    4: "neutral",
-    5: "sadness",
-    6: "anger"
-}
-label2id = {v: k for k, v in id2label.items()}
-
-
-
-##############################
-config = {
-    "batch_size": 1,
-    "lr": 7.960917579180225e-06,
-    "num_epochs": 9,
-    "unfreeze_epoch": 5,  # Epoch at which to unfreeze the feature extractor
-    "max_length": 64000,  # 3 seconds at 16kHz
-    "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
-}
-
-
-
-
-def fix_input_shape(inputs: torch.Tensor) -> torch.Tensor:
-    inputs = inputs.squeeze()
-    if inputs.ndim == 1:
-        inputs = inputs.unsqueeze(0)
-    return inputs
-
-def fix_feature_shape(features: torch.Tensor) -> torch.Tensor:
-    if features.ndim == 2:
-        features = features.unsqueeze(0)
-    return features
-
-def validate(model, dataloader, criterion, device):
-    model.eval()
-    total_loss = 0.0
-    total_correct = 0
-    total_samples = 0
-    all_preds = []
-    all_targets = []
-
-    with torch.no_grad():
-        for inputs, targets in dataloader:
-            inputs, targets = inputs.to(device), targets.to(device)
-            inputs = fix_input_shape(inputs)
-            features = model.mods.wav2vec2.extract_features(inputs)[0]
-            features = fix_feature_shape(features)
-            pooled = model.mods.avg_pool(features)
-            if pooled.ndim == 1:
-                pooled = pooled.unsqueeze(0)
-            elif pooled.ndim == 3:
-                pooled = pooled.squeeze(1)
-            predictions = model.mods.output_mlp(pooled)
-            loss = criterion(predictions, targets)
-            total_loss += loss.item()
-            total_correct += (predictions.argmax(dim=1) == targets).sum().item()
-            total_samples += targets.size(0)
-
-            all_preds.extend(predictions.argmax(dim=1).cpu().numpy())
-            all_targets.extend(targets.cpu().numpy())
-
-    avg_loss = total_loss / len(dataloader)
-    accuracy = total_correct / total_samples if total_samples > 0 else 0
-    bca = balanced_accuracy_score(all_targets, all_preds)
-    return avg_loss, bca,  accuracy
-
-
+# ──────────────────────────────
+# Data
+# ──────────────────────────────
 class EmotionDataset(Dataset):
-    def __init__(self, dataframe, base_dir=f"{base_dir}/syntact_cat", feature_extractor=None, max_length=48000, label_encoder=None):
-        self.dataframe = dataframe
-        self.base_dir = base_dir  # base path to prepend
-        self.feature_extractor = feature_extractor
-        self.max_length = max_length
-        self.label_encoder = label_encoder
+    """On-disk wave loader with padding / truncation."""
 
-    def __len__(self):
-        return len(self.dataframe)
+    def __init__(
+        self,
+        dataframe: pd.DataFrame,
+        audio_root: Path,
+        label_encoder: LabelEncoder,
+        max_length: int = 64000,
+        target_sr: int = 16_000,
+    ):
+        self.df             = dataframe
+        self.audio_root     = audio_root
+        self.le             = label_encoder
+        self.max_length     = max_length
+        self.target_sr      = target_sr
+        self.resampler_cache = {}
 
-    def __getitem__(self, idx):
-        sample = self.dataframe.iloc[idx]
+    def __len__(self) -> int:
+        return len(self.df)
 
-        # Full path = base_dir + file (e.g. base/synthesized_audio/de6_happy_...)
-        file_path = os.path.join(self.base_dir, sample["file"])
+    def _resample(self, wav: torch.Tensor, src_sr: int) -> torch.Tensor:
+        if src_sr == self.target_sr:
+            return wav
+        # Cache one resampler per sample-rate to save instantiation time
+        if src_sr not in self.resampler_cache:
+            self.resampler_cache[src_sr] = T.Resample(src_sr, self.target_sr)
+        return self.resampler_cache[src_sr](wav)
 
-        waveform, sample_rate = torchaudio.load(file_path)
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        row = self.df.iloc[idx]
+        wav_path = self.audio_root / row["file"]
+        waveform, sr = torchaudio.load(wav_path)
+        waveform = self._resample(waveform, sr).squeeze(0)  # mono
 
-        target_sample_rate = 16000
-        if sample_rate != target_sample_rate:
-            resampler = T.Resample(orig_freq=sample_rate, new_freq=target_sample_rate)
-            waveform = resampler(waveform)
-
-        waveform = waveform.squeeze(0)  # mono
-
-        label_str = sample["emotion"]
-        label  = label2id[label_str]
-        # if self.label_encoder:
-        #     label = self.label_encoder.transform([label_str])[0]
-        # else:
-        #     label = int(label_str)  # fallback
-
-        # Pad or truncate
+        # pad / truncate to fixed length
         if waveform.size(0) > self.max_length:
-            waveform = waveform[:self.max_length]
+            waveform = waveform[: self.max_length]
         elif waveform.size(0) < self.max_length:
             waveform = F.pad(waveform, (0, self.max_length - waveform.size(0)))
 
+        label = self.le.transform([row["emotion"]])[0]
         return waveform, torch.tensor(label, dtype=torch.long)
 
+# ──────────────────────────────
+# Helpers
+# ──────────────────────────────
+@torch.inference_mode()
+def validate(
+    model: EncoderClassifier,
+    dl: DataLoader,
+    criterion: nn.Module,
+    device: torch.device,
+) -> Tuple[float, float, float, List[int], List[int]]:
+    model.eval()
+    total_loss = total_correct = total_samples = 0
+    all_preds, all_targets = [], []
 
-# import joblib
+    for wav, tgt in dl:
+        wav, tgt = wav.to(device), tgt.to(device)
 
-# label_encoder_obj = joblib.load("label_encoder.joblib")  # or pickle
-# Load fitted LabelEncoder
-# print(label_encoder_obj.classes_)   # → array([0, 1, 2, 3, 4, 5, 6])
-# print(label_encoder_obj.dtype)      # int64 (or similar)
+        # SpeechBrain convenience: returns (B, emb_dim)
+        emb = model.encode_batch(wav)
 
-# Now transform test dataset using same encoder
-# df_pd["emotion"] = label_encoder_obj.transform(df_pd["emotion"])
+        logits = model.mods.output_mlp(emb)
+        loss   = criterion(logits, tgt)
 
-# mapping = dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_)))
-# print("Label mapping:", mapping)
-# num_classes = len(mapping)  # E
+        total_loss   += loss.item()
+        total_correct += (logits.argmax(1) == tgt).sum().item()
+        total_samples += tgt.numel()
 
+        all_preds.extend(logits.argmax(1).cpu().tolist())
+        all_targets.extend(tgt.cpu().tolist())
 
+    avg_loss = total_loss / len(dl)
+    acc      = total_correct / total_samples
+    bca      = balanced_accuracy_score(all_targets, all_preds)
+    return avg_loss, acc, bca, all_targets, all_preds
 
+# ──────────────────────────────
+# Main
+# ──────────────────────────────
+def main() -> None:
+    # 1 · load CSVs
+    df_train = pd.read_csv(CSV_TRAIN)
+    df_test  = pd.read_csv(CSV_TEST)
 
+    # 2 · label encoder fitted on **train only**
+    le = LabelEncoder().fit(df_train["emotion"])
+    num_classes = len(le.classes_)
+    print("Label map:", dict(zip(le.classes_, le.transform(le.classes_))))
 
+    # 3 · datasets & loaders
+    ds_train = EmotionDataset(df_train, CSV_DIR, le, CFG["max_length"])
+    ds_test  = EmotionDataset(df_test , CSV_DIR, le, CFG["max_length"])
 
+    dl_train = DataLoader(ds_train, batch_size=CFG["batch_size"], shuffle=False)
+    dl_test  = DataLoader(ds_test , batch_size=CFG["batch_size"], shuffle=False)
 
-# Load model
-model = EncoderClassifier.from_hparams(
-    source="speechbrain/emotion-recognition-wav2vec2-IEMOCAP",
-    savedir="pretrained_models/emotion_recognition",
-    run_opts={"device": config["device"]}
-)
+    # 4 · model + checkpoint
+    model = EncoderClassifier.from_hparams(
+        source="speechbrain/emotion-recognition-wav2vec2-IEMOCAP",
+        savedir=str(PRETRAIN_DIR),
+        run_opts={"device": CFG["device"]},
+    )
 
-# Patch the output layer to match training-time structure (you used nn.Linear)
-in_features = model.mods.output_mlp.w.in_features  # access .w to get input dim
-model.mods.output_mlp = nn.Linear(in_features, 7)  # or whatever your num_classes is
+    in_feats = model.mods.output_mlp.w.in_features
+    model.mods.output_mlp = nn.Linear(in_feats, num_classes)
+    model.load_state_dict(torch.load(CHECKPOINT, map_location=CFG["device"]))
 
-# Now it will accept standard Linear weights
-model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
-model.to(config["device"]).eval()
+    model.to(CFG["device"]).eval()
+    criterion = nn.CrossEntropyLoss()
 
-# ---------------------------
-# Validate on Entire RAVDESS
-# ---------------------------
-dataset = EmotionDataset(df_pd, feature_extractor=None, max_length=config["max_length"], label_encoder=label2id)
-dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
-criterion = nn.CrossEntropyLoss()
+    # 5 · evaluation
+    tr_loss, tr_acc, tr_bca, _, _ = validate(model, dl_train, criterion, CFG["device"])
+    te_loss, te_acc, te_bca, y_true, y_pred = validate(model, dl_test , criterion, CFG["device"])
 
-print(model.hparams.label_encoder)  # stores class names used during fine-tuning
-# print(label_encoder_obj.classes_)
+    print(f"Train  — loss: {tr_loss:.4f} · acc: {tr_acc:.4f} · bca: {tr_bca:.4f}")
+    print(f"Test   — loss: {te_loss:.4f} · acc: {te_acc:.4f} · bca: {te_bca:.4f}")
 
+    # 6 · confusion-matrix (optional)
+    cm = confusion_matrix(y_true, y_pred)
+    disp = ConfusionMatrixDisplay(cm, display_labels=le.classes_)
+    disp.plot(xticks_rotation=45); plt.tight_layout()
+    plt.show()
 
-test_loss, test_accuracy, raw_acc = validate(model, dataloader, criterion, config["device"])
-print(f"✅ RAVDESS Test Loss: {test_loss:.4f}, Test Accuracy: {raw_acc:.4f}, bca {test_accuracy:.4f}")
-
-#['happiness' 'anger' 'sadness' 'neutral' 'boredom' 'fear']
+if __name__ == "__main__":
+    main()
