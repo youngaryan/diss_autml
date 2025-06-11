@@ -123,10 +123,10 @@ class EmotionDataset(Dataset):
         waveform = waveform.squeeze(0)  # mono
 
         label_str = sample["emotion"]
-        if self.label_encoder and isinstance(label_str, str):
-            label = self.label_encoder[label_str]
+        if self.label_encoder:
+            label = self.label_encoder.transform([label_str])[0]
         else:
-            label = int(label_str)
+            label = int(label_str)  # fallback
 
         # Pad or truncate
         if waveform.size(0) > self.max_length:
