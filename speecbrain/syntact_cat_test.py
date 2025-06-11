@@ -45,6 +45,19 @@ print((len(df_pd)))
 
 
 
+id2label = {
+    0: "fear",
+    1: "disgust",
+    2: "happiness",
+    3: "boredom",
+    4: "neutral",
+    5: "sadness",
+    6: "anger"
+}
+label2id = {v: k for k, v in id2label.items()}
+
+
+
 ##############################
 config = {
     "batch_size": 1,
@@ -123,10 +136,11 @@ class EmotionDataset(Dataset):
         waveform = waveform.squeeze(0)  # mono
 
         label_str = sample["emotion"]
-        if self.label_encoder:
-            label = self.label_encoder.transform([label_str])[0]
-        else:
-            label = int(label_str)  # fallback
+        label  = label2id[label_str]
+        # if self.label_encoder:
+        #     label = self.label_encoder.transform([label_str])[0]
+        # else:
+        #     label = int(label_str)  # fallback
 
         # Pad or truncate
         if waveform.size(0) > self.max_length:
@@ -175,7 +189,7 @@ model.to(config["device"]).eval()
 # ---------------------------
 # Validate on Entire RAVDESS
 # ---------------------------
-dataset = EmotionDataset(df_pd, feature_extractor=None, max_length=config["max_length"], label_encoder=label_encoder_obj)
+dataset = EmotionDataset(df_pd, feature_extractor=None, max_length=config["max_length"], label_encoder=label2id)
 dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
