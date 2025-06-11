@@ -134,7 +134,7 @@ model = EncoderClassifier.from_hparams(
 # Adjust final classifier head and load weights
 in_features = model.mods.output_mlp.w.in_features
 model.mods.output_mlp = nn.Linear(in_features, num_classes)
-model.load_state_dict(torch.load("fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
