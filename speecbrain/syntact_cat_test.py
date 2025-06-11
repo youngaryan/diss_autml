@@ -14,14 +14,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import io, sys
 from datasets import load_dataset
-
+import torch.nn.functional as F
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from data_preprocessing.dataset_speech_brain import EmotionDataset
+# from data_preprocessing.dataset_speech_brain import EmotionDataset
 from sklearn.preprocessing import LabelEncoder
 from datasets import load_dataset
-from sklearn.metrics import balanced_accuracy_score
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 csv_path_train = os.path.join(base_dir, "syntact_cat", "db.emotion.categories.train.desired.csv")
@@ -97,23 +96,45 @@ def validate(model, dataloader, criterion, device):
     return avg_loss, bca, raw_acc
 
 
-# ---------------------------
-# Load and Preprocess RAVDESS
-# ---------------------------
-# df = load_dataset("confit/ravdess-parquet", "fold1")
-# df = pd.concat([df["train"].to_pandas(), df["test"].to_pandas()], ignore_index=True)
-# df = df[~df["emotion"].isin(["surprised"])].reset_index(drop=True)
+class EmotionDataset(Dataset):
+    def __init__(self, dataframe, base_dir=base_dir, feature_extractor=None, max_length=48000, label_encoder=None):
+        self.dataframe = dataframe
+        self.base_dir = base_dir  # base path to prepend
+        self.feature_extractor = feature_extractor
+        self.max_length = max_length
+        self.label_encoder = label_encoder
 
+    def __len__(self):
+        return len(self.dataframe)
 
+    def __getitem__(self, idx):
+        sample = self.dataframe.iloc[idx]
 
+        # Full path = base_dir + file (e.g. base/synthesized_audio/de6_happy_...)
+        file_path = os.path.join(self.base_dir, sample["file"])
 
-# label_encoder_obj = LabelEncoder()
-# df_pd["emotion"] = label_encoder_obj.fit_transform(df_pd["emotion"])
-# # Print mapping: original label -> encoded label
-# mapping = dict(zip(label_encoder_obj.classes_, label_encoder_obj.transform(label_encoder_obj.classes_)))
-# print("Label mapping:", mapping)
-# num_classes = len(mapping)  # E
+        waveform, sample_rate = torchaudio.load(file_path)
 
+        target_sample_rate = 16000
+        if sample_rate != target_sample_rate:
+            resampler = T.Resample(orig_freq=sample_rate, new_freq=target_sample_rate)
+            waveform = resampler(waveform)
+
+        waveform = waveform.squeeze(0)  # mono
+
+        label_str = sample["emotion"]
+        if self.label_encoder and isinstance(label_str, str):
+            label = self.label_encoder[label_str]
+        else:
+            label = int(label_str)
+
+        # Pad or truncate
+        if waveform.size(0) > self.max_length:
+            waveform = waveform[:self.max_length]
+        elif waveform.size(0) < self.max_length:
+            waveform = F.pad(waveform, (0, self.max_length - waveform.size(0)))
+
+        return waveform, torch.tensor(label, dtype=torch.long)
 
 
 import joblib
@@ -150,6 +171,10 @@ model.eval().to(config["device"])
 dataset = EmotionDataset(df_pd, feature_extractor=None, max_length=config["max_length"], label_encoder=label_encoder_obj)
 dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
+
+print(model.hparams.label_encoder)  # stores class names used during fine-tuning
+print(label_encoder_obj.classes_)
+
 
 test_loss, test_accuracy, raw_acc = validate(model, dataloader, criterion, config["device"])
 print(f"✅ RAVDESS Test Loss: {test_loss:.4f}, Test Accuracy: {raw_acc:.4f}, bca {test_accuracy:.4f}")
