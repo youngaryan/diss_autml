@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import torchaudio
 import torchaudio.transforms as T
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import io
 from datasets import load_dataset
@@ -40,14 +40,16 @@ label_encoder.fit(EMODB_LABELS)
 #     4: "neutral",
 #     5: "sadness",
 # }
-crema_to_emodb = {
-    'neutral': 'neutral',
-    'happy': 'happiness',
-    'sad': 'sadness',
-    'anger': 'anger',
-    'fear': 'fear',
-    'disgust': 'disgust'
+crema_to_emodb  = {
+    0: "fear",
+    1: "disgust",
+    2: "happy",
+    3: "boredom",
+    4: "neutral",
+    5: "sad",
+    6: "anger"
 }
+label2id = {v: k for k, v in crema_to_emodb.items()}
 
 # ---------------------------
 # Load TESS from Hugging Face
