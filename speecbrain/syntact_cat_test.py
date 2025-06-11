@@ -83,30 +83,37 @@ def fix_feature_shape(features: torch.Tensor) -> torch.Tensor:
     return features
 
 def validate(model, dataloader, criterion, device):
-    """Return avg-loss, balanced-accuracy, raw-accuracy."""
     model.eval()
-    total_loss, total_correct, total_samples = 0.0, 0, 0
-    all_preds, all_targets = [], []
+    total_loss = 0.0
+    total_correct = 0
+    total_samples = 0
+    all_preds = []
+    all_targets = []
 
     with torch.no_grad():
         for inputs, targets in dataloader:
             inputs, targets = inputs.to(device), targets.to(device)
+            inputs = fix_input_shape(inputs)
+            features = model.mods.wav2vec2.extract_features(inputs)[0]
+            features = fix_feature_shape(features)
+            pooled = model.mods.avg_pool(features)
+            if pooled.ndim == 1:
+                pooled = pooled.unsqueeze(0)
+            elif pooled.ndim == 3:
+                pooled = pooled.squeeze(1)
+            predictions = model.mods.output_mlp(pooled)
+            loss = criterion(predictions, targets)
+            total_loss += loss.item()
+            total_correct += (predictions.argmax(dim=1) == targets).sum().item()
+            total_samples += targets.size(0)
 
-            # ↓↓↓ single call does feature extraction, pooling, and MLP ↓↓↓
-            logits, _ = model.classify_batch(inputs)          # logits = (batch, num_classes)
-
-            loss = criterion(logits, targets)
-            total_loss     += loss.item()
-            total_correct  += (logits.argmax(1) == targets).sum().item()
-            total_samples  += targets.size(0)
-
-            all_preds.extend(logits.argmax(1).cpu().numpy())
+            all_preds.extend(predictions.argmax(dim=1).cpu().numpy())
             all_targets.extend(targets.cpu().numpy())
 
     avg_loss = total_loss / len(dataloader)
-    raw_acc  = total_correct / total_samples if total_samples else 0
-    bca      = balanced_accuracy_score(all_targets, all_preds)
-    return avg_loss, bca, raw_acc
+    accuracy = total_correct / total_samples if total_samples > 0 else 0
+    bca = balanced_accuracy_score(all_targets, all_preds)
+    return avg_loss, bca,  accuracy
 
 
 class EmotionDataset(Dataset):
