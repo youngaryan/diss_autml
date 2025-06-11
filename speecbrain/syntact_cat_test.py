@@ -97,7 +97,7 @@ def validate(model, dataloader, criterion, device):
 
 
 class EmotionDataset(Dataset):
-    def __init__(self, dataframe, base_dir=f"{base_dir}/syntact_cat/synthesized_audio", feature_extractor=None, max_length=48000, label_encoder=None):
+    def __init__(self, dataframe, base_dir=f"{base_dir}/syntact_cat", feature_extractor=None, max_length=48000, label_encoder=None):
         self.dataframe = dataframe
         self.base_dir = base_dir  # base path to prepend
         self.feature_extractor = feature_extractor
