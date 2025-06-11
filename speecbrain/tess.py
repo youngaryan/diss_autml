@@ -41,16 +41,13 @@ label_encoder.fit(EMODB_LABELS)
 #     5: "sadness",
 # }
 crema_to_emodb = {
-    0: "fear",
-    1: "disgust",
-    2: "happiness",  # fixed
-    3: "neutral",         # remove 'boredom'
-    4: "neutral",
-    5: "sadness",    # fixed
-    6: "anger"
+    'neutral': 'neutral',
+    'happy': 'happiness',
+    'sad': 'sadness',
+    'anger': 'anger',
+    'fear': 'fear',
+    'disgust': 'disgust'
 }
-
-crema_to_emodb = {v: k for k, v in crema_to_emodb.items()}
 
 # ---------------------------
 # Load TESS from Hugging Face
