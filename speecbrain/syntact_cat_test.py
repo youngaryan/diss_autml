@@ -141,6 +141,8 @@ import joblib
 
 label_encoder_obj = joblib.load("label_encoder.joblib")  # or pickle
 # Load fitted LabelEncoder
+print(label_encoder_obj.classes_)   # → array([0, 1, 2, 3, 4, 5, 6])
+print(label_encoder_obj.dtype)      # int64 (or similar)
 
 # Now transform test dataset using same encoder
 # df_pd["emotion"] = label_encoder_obj.transform(df_pd["emotion"])
