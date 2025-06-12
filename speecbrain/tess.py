@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import torchaudio
 import torchaudio.transforms as T
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import io
 from datasets import load_dataset
@@ -188,7 +188,7 @@ model = EncoderClassifier.from_hparams(
 in_features = model.mods.output_mlp.w.weight.shape[1]
 model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS))
 
-# model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
