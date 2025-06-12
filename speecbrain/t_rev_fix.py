@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader, Dataset
 from speechbrain.inference import EncoderClassifier
 from sklearn.preprocessing import LabelEncoder
 from datasets import load_dataset
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import balanced_accuracy_score, accuracy_score
 import torchaudio
 import os
 import io
@@ -110,6 +110,7 @@ def validate(model, dataloader, criterion, device):
 
     avg_loss = total_loss / len(dataloader)
     bca = balanced_accuracy_score(all_targets, all_preds)
+    raw_acc = total_correct / total_samples
     return avg_loss, bca, all_preds, all_targets
 
 # ---------------------------
