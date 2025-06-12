@@ -153,6 +153,7 @@ model.mods.output_mlp = nn.Linear(in_features, num_classes)
 
 # Now safely load your custom EMO-DB-trained weights
 #model.load_state_dict(torch.load("fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
