@@ -206,6 +206,8 @@ print(f"✅ TESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accurac
 # Plot Confusion Matrix
 # ---------------------------
 cm = confusion_matrix(all_targets, all_preds, normalize='true')
+idx_order = [label_encoder.transform([label])[0] for label in EMODB_LABELS]
+cm= cm[np.ix_(idx_order, idx_order)]
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
 
 fig, ax = plt.subplots(figsize=(8, 6))
