@@ -8,7 +8,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import torchaudio
 import torchaudio.transforms as T
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import io
 from datasets import load_dataset

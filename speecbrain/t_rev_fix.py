@@ -115,7 +115,7 @@ def validate(model, dataloader, criterion, device):
 # ---------------------------
 # Emotion Mapping & Label Encoding
 # ---------------------------
-EMODB_LABELS = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
+EMODB_LABELS = ["fear", "disgust", "happiness", "boredom", "neutral", "sadness", "anger"]
 label_encoder_obj = LabelEncoder()
 label_encoder_obj.fit(EMODB_LABELS)
 
@@ -177,7 +177,7 @@ print(f"✅ RAVDESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accu
 # ---------------------------
 cm = confusion_matrix(all_targets, all_preds, normalize='true')
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
-
+cm= cm[np.ix_(idx_order, idx_order)]
 fig, ax = plt.subplots(figsize=(8, 6))
 disp.plot(ax=ax, cmap="Blues", colorbar=False)
 plt.title("Confusion Matrix on RAVDESS (Predicted vs True)")
