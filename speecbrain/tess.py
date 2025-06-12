@@ -25,7 +25,7 @@ config = {
 # ---------------------------
 # EMO-DB Emotion Labels
 # ---------------------------
-EMODB_LABELS = ["fear", "disgust", "happiness", "neutral", "sadness", "anger"]
+EMODB_LABELS = ["fear", "disgust", "happiness", "boredom", "neutral", "sadness", "anger"]
 label_encoder = LabelEncoder()
 label_encoder.fit(EMODB_LABELS)
 
@@ -186,7 +186,7 @@ model = EncoderClassifier.from_hparams(
 
 # Replace classification head
 in_features = model.mods.output_mlp.w.weight.shape[1]
-model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS)+1)
+model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS))
 
 model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
