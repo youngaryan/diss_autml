@@ -233,11 +233,11 @@ disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
 
 fig, ax = plt.subplots(figsize=(8, 6))
 disp.plot(ax=ax, cmap="Blues", colorbar=False)
-plt.title("Confusion Matrix on RAVDESS (Predicted vs True)")
+plt.title("Confusion Matrix on EMODB Validation SET (Predicted vs True)")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig("confusion_matrix_ravdess.png")
-print("📊 Saved confusion matrix as confusion_matrix_ravdess.png")
+plt.savefig("confusion_matrix_EMODB_Validation_SET.png")
+print("📊 Saved confusion matrix as confusion_matrix_EMODB_Validation_SET.png")
 
 if best_model_state_dict is not None:
     torch.save(best_model_state_dict, "best_fine_tuned_model_state_dict.pt")
