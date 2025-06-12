@@ -25,7 +25,7 @@ config = {
 # ---------------------------
 # EMO-DB Emotion Labels
 # ---------------------------
-EMODB_LABELS = ['anger', 'boredom','disgust', 'fear', 'happiness', 'neutral', 'sadness']
+EMODB_LABELS = ["fear", "disgust", "happiness", "boredom", "neutral", "sadness", "anger"]
 label_encoder = LabelEncoder()
 label_encoder.fit(EMODB_LABELS)
 
