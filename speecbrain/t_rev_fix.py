@@ -111,7 +111,7 @@ def validate(model, dataloader, criterion, device):
     avg_loss = total_loss / len(dataloader)
     bca = balanced_accuracy_score(all_targets, all_preds)
     raw_acc = total_correct / total_samples
-    return avg_loss, bca, all_preds, all_targets
+    return avg_loss, bca, all_preds, all_targets, raw_acc
 
 # ---------------------------
 # Emotion Mapping & Label Encoding
@@ -169,8 +169,8 @@ dataset = EmotionDataset(df, label_encoder=label_encoder, max_length=config["max
 dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
-test_loss, test_bacc, all_preds, all_targets = validate(model, dataloader, criterion, config["device"])
-print(f"✅ RAVDESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accuracy: {test_bacc:.4f}")
+test_loss, test_bacc, all_preds, all_targets , raw_acc= validate(model, dataloader, criterion, config["device"])
+print(f"✅ RAVDESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accuracy: {test_bacc:.4f}, raww_acc {raw_acc:.4f}")
 
 
 # ---------------------------
