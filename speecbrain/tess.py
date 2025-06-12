@@ -46,7 +46,8 @@ crema_to_emodb = {
     'sad': 'sadness',
     'anger': 'anger',
     'fear': 'fear',
-    'disgust': 'disgust'
+    'disgust': 'disgust',
+    "calm": "boredom"  # optionally merge
 }
 
 # ---------------------------
