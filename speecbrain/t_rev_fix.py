@@ -116,8 +116,8 @@ def validate(model, dataloader, criterion, device):
 # Emotion Mapping & Label Encoding
 # ---------------------------
 EMODB_LABELS = ["fear", "disgust", "happiness", "boredom", "neutral", "sadness", "anger"]
-label_encoder_obj = LabelEncoder()
-label_encoder_obj.fit(EMODB_LABELS)
+label_encoder = LabelEncoder()
+label_encoder.fit(EMODB_LABELS)
 
 ravdess_to_emodb = {
     "angry": "anger",
@@ -164,7 +164,7 @@ model.eval()
 # ---------------------------
 # Evaluation
 # ---------------------------
-dataset = EmotionDataset(df, label_encoder=label_encoder_obj, max_length=config["max_length"])
+dataset = EmotionDataset(df, label_encoder=label_encoder, max_length=config["max_length"])
 dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
@@ -177,6 +177,7 @@ print(f"✅ RAVDESS Generalization Test — Loss: {test_loss:.4f}, Balanced Accu
 # ---------------------------
 cm = confusion_matrix(all_targets, all_preds, normalize='true')
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
+idx_order = [label_encoder.transform([label])[0] for label in EMODB_LABELS]
 cm= cm[np.ix_(idx_order, idx_order)]
 fig, ax = plt.subplots(figsize=(8, 6))
 disp.plot(ax=ax, cmap="Blues", colorbar=False)
