@@ -188,7 +188,7 @@ model = EncoderClassifier.from_hparams(
 in_features = model.mods.output_mlp.w.weight.shape[1]
 model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS))
 
-model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
+# model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
