@@ -21,10 +21,12 @@ import numpy as np
 # ---------------------------
 config = {
     "batch_size": 1,
-    "max_length": 64000,
+    "lr": 2.2808811593092166e-05,
+    "num_epochs": 9,
+    "unfreeze_epoch": 0,  # Epoch at which to unfreeze the feature extractor
+    "max_length": 80000,  # 3 seconds at 16kHz
     "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 }
-
 # ---------------------------
 # Define EmotionDataset Class
 # ---------------------------
