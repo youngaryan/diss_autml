@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 from class_based_fixed_speech_brain import EmotionRecognitionTrainer
+from numpy.random import default_rng
 
 # ---------------------
 # Data Preparation
@@ -113,7 +114,8 @@ if __name__ == "__main__":
                 algo=tpe.suggest,
                 max_evals=50,
                 trials=trials,
-                rstate=np.random.RandomState(SEED))
+                rstate=default_rng(SEED)
+                )
 
     max_length_options = [2 * 16000, 3 * 16000, 4 * 16000, 5 * 16000, 7 * 16000, 10 * 16000]
     best['max_length'] = max_length_options[best['max_length']]
