@@ -16,7 +16,7 @@ from optuna.samplers import TPESampler
 # Load dataset and prepare label mapping
 
 
-SEED = 42
+SEED = 123455
 
 random.seed(SEED)
 np.random.seed(SEED)

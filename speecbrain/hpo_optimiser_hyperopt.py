@@ -12,7 +12,7 @@ from class_based_fixed_speech_brain import EmotionRecognitionTrainer
 # ---------------------
 # Data Preparation
 # ---------------------
-SEED = 42
+SEED = 123455
 
 import random
 import numpy as np
