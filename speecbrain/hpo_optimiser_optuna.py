@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from class_based_fixed_speech_brain import EmotionRecognitionTrainer
 import random
+from statics import SEED
 import numpy as np
 from optuna.samplers import TPESampler
 # ---------------------
@@ -16,7 +17,7 @@ from optuna.samplers import TPESampler
 # Load dataset and prepare label mapping
 
 
-SEED = 123455
+# SEED = 123455
 
 random.seed(SEED)
 np.random.seed(SEED)

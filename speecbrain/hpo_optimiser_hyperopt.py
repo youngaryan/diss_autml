@@ -9,11 +9,13 @@ from sklearn.preprocessing import LabelEncoder
 from hyperopt import fmin, tpe, hp, Trials, STATUS_OK
 from class_based_fixed_speech_brain import EmotionRecognitionTrainer
 from numpy.random import default_rng
+from statics import SEED
+
 
 # ---------------------
 # Data Preparation
 # ---------------------
-SEED = 123455
+# SEED = 123455
 
 import random
 import numpy as np

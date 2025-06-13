@@ -8,11 +8,13 @@ import torch
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from class_based_fixed_speech_brain import EmotionRecognitionTrainer
+from statics import SEED
+
 
 # Import Ax client
 from ax.service.ax_client import AxClient
 
-SEED = 123455
+# SEED = 123455
 random.seed(SEED);
 np.random.seed(SEED)
 torch.manual_seed(SEED); torch.cuda.manual_seed_all(SEED)
