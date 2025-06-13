@@ -156,7 +156,7 @@ model.mods.output_mlp = nn.Linear(in_features, num_classes)
 
 # Now safely load your custom EMO-DB-trained weights
 #model.load_state_dict(torch.load("fine_tuned_model_state_dict.pt"))
-model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
+# model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
@@ -187,7 +187,7 @@ disp.plot(ax=ax, cmap="Blues", colorbar=False)
 plt.title("Confusion Matrix on RAVDESS (Predicted vs True)")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig("confusion_matrix_ravdess.png")
+# plt.savefig("confusion_matrix_ravdess.png")
 print("📊 Saved confusion matrix as confusion_matrix_ravdess.png")
 
 #######################################################
@@ -223,5 +223,5 @@ for rect in bar1 + bar2:
                 ha='center', va='bottom', fontsize=8)
 
 plt.tight_layout()
-plt.savefig("emotion_true_positive_comparison.png")
+# plt.savefig("emotion_true_positive_comparison.png")
 print("📊 Saved bar chart as emotion_true_positive_comparison.png")
