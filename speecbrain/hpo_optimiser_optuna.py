@@ -7,11 +7,23 @@ import torch
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from class_based_fixed_speech_brain import EmotionRecognitionTrainer
-
+import random
+import numpy as np
+from optuna.samplers import TPESampler
 # ---------------------
 # Data Preparation
 # ---------------------
 # Load dataset and prepare label mapping
+
+
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
+torch.use_deterministic_algorithms(True)
+
 df = pd.read_parquet("hf://datasets/renumics/emodb/data/train-00000-of-00001-cf0d4b1ae18136ff.parquet")
 label_encoder_obj = LabelEncoder()
 df["emotion"] = label_encoder_obj.fit_transform(df["emotion"])
@@ -89,7 +101,7 @@ def objective(trial):
 # ---------------------
 if __name__ == "__main__":
     # Create a study to maximize the validation accuracy
-    study = optuna.create_study(direction="maximize")
+    study = optuna.create_study(direction="maximize", sampler=TPESampler(seed=SEED))
     study.optimize(objective, n_trials=50)
     
     # Print best trial details

@@ -12,6 +12,21 @@ from class_based_fixed_speech_brain import EmotionRecognitionTrainer
 # ---------------------
 # Data Preparation
 # ---------------------
+SEED = 42
+
+import random
+import numpy as np
+
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
+torch.use_deterministic_algorithms(True)
+
+
+
+
 df = pd.read_parquet("hf://datasets/renumics/emodb/data/train-00000-of-00001-cf0d4b1ae18136ff.parquet")
 label_encoder_obj = LabelEncoder()
 df["emotion"] = label_encoder_obj.fit_transform(df["emotion"])
@@ -92,6 +107,7 @@ def objective(params):
 # ---------------------
 if __name__ == "__main__":
     trials = Trials()
+    trials.set_seed(SEED)
     best = fmin(fn=objective,
                 space=space,
                 algo=tpe.suggest,

@@ -1,6 +1,8 @@
 import os
 import time
+import numpy as np
 import csv
+import random
 import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
@@ -9,6 +11,12 @@ from class_based_fixed_speech_brain import EmotionRecognitionTrainer
 
 # Import Ax client
 from ax.service.ax_client import AxClient
+
+SEED = 42
+random.seed(SEED);
+np.random.seed(SEED)
+torch.manual_seed(SEED); torch.cuda.manual_seed_all(SEED)
+torch.use_deterministic_algorithms(True)
 
 # ---------------------
 # Data Preparation
@@ -30,7 +38,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # ---------------------
 # Ax Experiment Setup
 # ---------------------
-ax_client = AxClient()
+ax_client = AxClient(random_seed=SEED)
 ax_client.create_experiment(
     name="emotion_recognition_experiment",
     parameters=[
