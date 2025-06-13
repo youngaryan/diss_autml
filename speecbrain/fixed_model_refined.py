@@ -22,13 +22,13 @@ from sklearn.preprocessing import LabelEncoder
 # Configuration
 # ---------------------------
 # 0,7.960917579180225e-06,9,5,64000,0.9301587301587302,1621.540283203125
-
+# 1,2.2808811593092166e-05,9,0,80000,0.9611111111111111,156.26804518699646
 config = {
     "batch_size": 1,
-    "lr": 7.960917579180225e-06,
+    "lr": 2.2808811593092166e-05,
     "num_epochs": 9,
-    "unfreeze_epoch": 5,  # Epoch at which to unfreeze the feature extractor
-    "max_length": 64000,  # 3 seconds at 16kHz
+    "unfreeze_epoch": 0,  # Epoch at which to unfreeze the feature extractor
+    "max_length": 80000,  # 3 seconds at 16kHz
     "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 }
 
