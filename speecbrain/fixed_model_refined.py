@@ -40,6 +40,11 @@ config = {
     "device": torch.device("cuda" if torch.cuda.is_available() else "cpu")
 }
 
+
+torch.backends.cudnn.deterministic = True
+torch.backends.cudnn.benchmark = False
+g = torch.Generator()
+g.manual_seed(SEED)
 # ---------------------------
 # Helper Functions
 # ---------------------------
@@ -148,8 +153,8 @@ model.to(device)
 # ---------------------------
 train_dataset = EmotionDataset(train_df, feature_extractor=None, max_length=config["max_length"], label_encoder=label_encoder_obj)
 valid_dataset = EmotionDataset(valid_df, feature_extractor=None, max_length=config["max_length"], label_encoder=label_encoder_obj)
-train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True)
-valid_loader = DataLoader(valid_dataset, batch_size=config["batch_size"], shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=config["batch_size"], shuffle=True, generator=g)
+valid_loader = DataLoader(valid_dataset, batch_size=config["batch_size"], shuffle=False, generator=g)
 
 # ---------------------------
 # Training Setup
