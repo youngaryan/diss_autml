@@ -107,12 +107,13 @@ def objective(params):
 # ---------------------
 if __name__ == "__main__":
     trials = Trials()
-    trials.set_seed(SEED)
+
     best = fmin(fn=objective,
                 space=space,
                 algo=tpe.suggest,
                 max_evals=50,
-                trials=trials)
+                trials=trials,
+                rstate=np.random.RandomState(SEED))
 
     max_length_options = [2 * 16000, 3 * 16000, 4 * 16000, 5 * 16000, 7 * 16000, 10 * 16000]
     best['max_length'] = max_length_options[best['max_length']]
