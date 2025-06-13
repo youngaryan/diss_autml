@@ -12,7 +12,7 @@ from class_based_fixed_speech_brain import EmotionRecognitionTrainer
 # Import Ax client
 from ax.service.ax_client import AxClient
 
-SEED = 42
+SEED = 1234
 random.seed(SEED);
 np.random.seed(SEED)
 torch.manual_seed(SEED); torch.cuda.manual_seed_all(SEED)
