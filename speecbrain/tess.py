@@ -192,7 +192,7 @@ model = EncoderClassifier.from_hparams(
 in_features = model.mods.output_mlp.w.weight.shape[1]
 model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS))
 
-# model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
@@ -219,7 +219,7 @@ disp.plot(ax=ax, cmap="Blues", colorbar=False)
 plt.title("Confusion Matrix on CREMA-D (Predicted vs True)")
 plt.xticks(rotation=45)
 plt.tight_layout()
-# plt.savefig("confusion_matrix_CREMA-D.png")
+plt.savefig("confusion_matrix_CREMA-D.png")
 print("📊 Saved confusion matrix as confusion_matrix_CREMA-D.png")
 
 # ---------------------------
@@ -257,5 +257,5 @@ for rect in bar1 + bar2:
                 ha='center', va='bottom', fontsize=8)
 
 plt.tight_layout()
-# plt.savefig("emotion_true_positive_comparison_tess.png")
+plt.savefig("emotion_true_positive_comparison_tess.png")
 print("📊 Saved bar chart as emotion_true_positive_comparison_tess.png")
