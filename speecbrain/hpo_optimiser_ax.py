@@ -16,7 +16,7 @@ SEED = 42
 random.seed(SEED);
 np.random.seed(SEED)
 torch.manual_seed(SEED); torch.cuda.manual_seed_all(SEED)
-torch.use_deterministic_algorithms(True)
+# torch.use_deterministic_algorithms(True)
 
 # ---------------------
 # Data Preparation
