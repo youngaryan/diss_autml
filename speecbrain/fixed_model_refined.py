@@ -8,15 +8,23 @@ from speechbrain.inference import EncoderClassifier
 from sklearn.metrics import balanced_accuracy_score
 import joblib
 import matplotlib.pyplot as plt
-
+import random
+import numpy as np
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
-
+from statics import SEED
 from data_preprocessing.dataset_speech_brain import EmotionDataset
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+torch.cuda.manual_seed_all(SEED)
+
 
 # ---------------------------
 # Configuration
