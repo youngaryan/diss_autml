@@ -4,11 +4,12 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from speechbrain.inference import EncoderClassifier
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.preprocessing import LabelEncoder
+import numpy as np
 import sys
 import os
-import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from data_preprocessing.dataset_speech_brain import EmotionDataset
@@ -85,6 +86,11 @@ print("Label mapping:", mapping)
 num_classes = len(mapping)
 
 # ---------------------------
+# Split into Train and Validation Set
+# ---------------------------
+train_df, val_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df["emotion"])
+
+# ---------------------------
 # Load Model
 # ---------------------------
 model = EncoderClassifier.from_hparams(
@@ -93,6 +99,7 @@ model = EncoderClassifier.from_hparams(
     run_opts={"device": config["device"]}
 )
 
+# Replace classifier head
 in_features = model.mods.output_mlp.w.in_features
 model.mods.output_mlp = nn.Linear(in_features, num_classes)
 # model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
@@ -100,24 +107,22 @@ model.to(config["device"])
 model.eval()
 
 # ---------------------------
-# Create Dataset and Dataloader
+# Create Validation Dataset and Dataloader
 # ---------------------------
-dataset = EmotionDataset(df, feature_extractor=None, max_length=config["max_length"], label_encoder=mapping)
-dataloader = DataLoader(dataset, batch_size=config["batch_size"], shuffle=False)
+val_dataset = EmotionDataset(val_df, feature_extractor=None, max_length=config["max_length"], label_encoder=mapping)
+val_dataloader = DataLoader(val_dataset, batch_size=config["batch_size"], shuffle=False)
 criterion = nn.CrossEntropyLoss()
 
 # ---------------------------
 # Run Validation and Plot Confusion Matrix
 # ---------------------------
-val_loss, bca, acc, preds, targets = validate(model, dataloader, criterion, config["device"])
+val_loss, bca, acc, preds, targets = validate(model, val_dataloader, criterion, config["device"])
 print(f"✅ Validation Loss: {val_loss:.4f}, Accuracy: {acc:.4f}, BCA: {bca:.4f}")
 
 cm = confusion_matrix(targets, preds)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder_obj.classes_)
 disp.plot(cmap='Blues', xticks_rotation=45)
-plt.title("Confusion Matrix on Validation Set")
+plt.title("Confusion Matrix on Validation Set (EMODB) BASELINE SPEECHBRAIN")
 plt.tight_layout()
-# plt.show()
-
-# Optional: Save confusion matrix to file
 plt.savefig("confusion_matrix_validation.png")
+# plt.show()
