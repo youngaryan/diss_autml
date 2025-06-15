@@ -119,10 +119,26 @@ criterion = nn.CrossEntropyLoss()
 val_loss, bca, acc, preds, targets = validate(model, val_dataloader, criterion, config["device"])
 print(f"✅ Validation Loss: {val_loss:.4f}, Accuracy: {acc:.4f}, BCA: {bca:.4f}")
 
-cm = confusion_matrix(targets, preds)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder_obj.classes_)
-# disp.plot(cmap='Blues', xticks_rotation=45)
+# cm = confusion_matrix(targets, preds)
+# disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder_obj.classes_)
+# # disp.plot(cmap='Blues', xticks_rotation=45)
+# plt.title("Confusion Matrix on Validation Set (EMODB) BASELINE SPEECHBRAIN")
+# plt.tight_layout()
+# plt.savefig("confusion_matrix_validation.png")
+# # plt.show()
+
+
+EMODB_LABELS = ["fear", "disgust", "happiness", "boredom", "neutral", "sadness", "anger"]
+
+# ---------------------------
+cm = confusion_matrix(targets, preds, normalize='true')
+
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
+
+fig, ax = plt.subplots(figsize=(8, 6))
+disp.plot(ax=ax, cmap="Blues", colorbar=False)
 plt.title("Confusion Matrix on Validation Set (EMODB) BASELINE SPEECHBRAIN")
+plt.xticks(rotation=45)
 plt.tight_layout()
 plt.savefig("confusion_matrix_validation.png")
-# plt.show()
+print("📊 Saved confusion matrix as confusion_matrix_CREMA-D.png")
