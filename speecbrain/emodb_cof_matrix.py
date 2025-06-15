@@ -121,7 +121,7 @@ print(f"✅ Validation Loss: {val_loss:.4f}, Accuracy: {acc:.4f}, BCA: {bca:.4f}
 
 cm = confusion_matrix(targets, preds)
 disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder_obj.classes_)
-disp.plot(cmap='Blues', xticks_rotation=45)
+# disp.plot(cmap='Blues', xticks_rotation=45)
 plt.title("Confusion Matrix on Validation Set (EMODB) BASELINE SPEECHBRAIN")
 plt.tight_layout()
 plt.savefig("confusion_matrix_validation.png")
