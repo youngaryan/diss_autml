@@ -437,8 +437,9 @@ kaggle.json
 *.1
 
 # plots and images
-*.png
+#*.png
 
 pretrained_models/
 *pretrained_model*
 *wav2vec2_checkpoints*
+*.pt
