@@ -192,7 +192,7 @@ model = EncoderClassifier.from_hparams(
 in_features = model.mods.output_mlp.w.weight.shape[1]
 model.mods.output_mlp = nn.Linear(in_features, len(EMODB_LABELS))
 
-# model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
@@ -216,10 +216,10 @@ disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=EMODB_LABELS)
 
 fig, ax = plt.subplots(figsize=(8, 6))
 disp.plot(ax=ax, cmap="Blues", colorbar=False)
-plt.title("Confusion Matrix on CREMA-D (Predicted vs True)- Zero-shot speechbrain")
+plt.title("Confusion Matrix on CREMA-D (Predicted vs True)")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig("confusion_matrix_CREMA-D_ZeroShot.png")
+plt.savefig("confusion_matrix_CREMA-D.png")
 print("📊 Saved confusion matrix as confusion_matrix_CREMA-D.png")
 
 # ---------------------------
