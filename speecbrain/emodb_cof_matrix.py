@@ -128,7 +128,7 @@ print(f"✅ Validation Loss: {val_loss:.4f}, Accuracy: {acc:.4f}, BCA: {bca:.4f}
 # # plt.show()
 
 
-EMODB_LABELS = ["fear", "disgust", "happiness", "boredom", "neutral", "sadness", "anger"]
+EMODB_LABELS = ['anger', 'boredom', 'disgust', 'fear', 'happiness', 'neutral', 'sadness']
 
 # ---------------------------
 cm = confusion_matrix(targets, preds, normalize='true')
