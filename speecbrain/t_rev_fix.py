@@ -156,7 +156,7 @@ model.mods.output_mlp = nn.Linear(in_features, num_classes)
 
 # Now safely load your custom EMO-DB-trained weights
 #model.load_state_dict(torch.load("fine_tuned_model_state_dict.pt"))
-# model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
+model.load_state_dict(torch.load("best_fine_tuned_model_state_dict.pt"))
 model.to(config["device"])
 model.eval()
 
@@ -184,10 +184,12 @@ idx_order = [label_encoder.transform([label])[0] for label in EMODB_LABELS]
 cm= cm[np.ix_(idx_order, idx_order)]
 fig, ax = plt.subplots(figsize=(8, 6))
 disp.plot(ax=ax, cmap="Blues", colorbar=False)
-plt.title("Confusion Matrix on RAVDESS (Predicted vs True)Zero Shot SpeechBrain")
+# plt.title("Confusion Matrix on RAVDESS (Predicted vs True)Zero Shot SpeechBrain")
+plt.title("Confusion Matrix on RAVDESS (Predicted vs True)")
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig("confusion_matrix_ravdess_zero_shot.png")
+# plt.savefig("confusion_matrix_ravdess_zero_shot.png")
+plt.savefig("confusion_matrix_ravdess.png")
 print("📊 Saved confusion matrix as confusion_matrix_ravdess.png")
 
 #######################################################
