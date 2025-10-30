@@ -11,3 +11,6 @@ squeue --me
 sbatch ~/sched_scripts/ax_hpo.sh
 
 srun --partition=gpu --qos=gpu --gres=gpu:1 --pty bash
+
+
+<img width="1146" height="70" alt="image" src="https://github.com/user-attachments/assets/97094b30-2410-4a41-8cbc-f986cdf885d4" />
