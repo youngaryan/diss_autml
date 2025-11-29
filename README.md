@@ -1,3 +1,9 @@
+# In your terminal (interactive mode)
+module load Anaconda3/2024.02-1
+mamba activate abstentionrl
+pip install -r /mnt/parscratch/users/ach21ag/private/AbstentionRL/requirements.txt
+
+
 # diss_autml
 
 ssh ach21ag@stanage.shef.ac.uk
