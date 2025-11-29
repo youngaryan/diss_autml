@@ -22,3 +22,4 @@ eval "$(mamba shell hook --shell bash)"
 
 # 2) Activate the env
 mamba activate abstention-bench
+mamba activate abstentionrl
