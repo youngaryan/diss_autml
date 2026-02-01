@@ -33,3 +33,18 @@ eval "$(mamba shell hook --shell bash)"
 # 2) Activate the env
 mamba activate abstention-bench
 mamba activate abstentionrl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+srun --mem=64G --cpus-per-task=8 --partition=gpu-h100-nvl --qos=gpu --gres=gpu:1 --pty bash -i
